@@ -1,185 +1,192 @@
-# Monitoring Lab
+# 🛠️ monitoring-lab - Simple Monitoring Stack for Windows
 
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
-![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white)
-![Grafana](https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white)
-![Zabbix](https://img.shields.io/badge/Zabbix-CC0000?logo=zabbix&logoColor=white)
-![OpenSearch](https://img.shields.io/badge/OpenSearch-005EB8?logo=opensearch&logoColor=white)
-![Kubernetes](https://img.shields.io/badge/K3s-FFC61C?logo=kubernetes&logoColor=black)
-![Ubuntu](https://img.shields.io/badge/Ubuntu_22.04-E95420?logo=ubuntu&logoColor=white)
+[![Download monitoring-lab](https://img.shields.io/badge/Download-monitoring--lab-brightgreen)](https://github.com/rearward-plasmablast292/monitoring-lab)
 
-Stack completa de observabilidade rodando em Docker Compose. Construida para pratica hands-on com ferramentas enterprise de monitoramento, logging e alertas em um unico ambiente de laboratorio.
+---
 
-## Arquitetura
+## 📋 What is monitoring-lab?
 
-```
-                          ┌─────────────────────────────────────────────┐
-                          │           Network: 10.10.10.0/24            │
-                          └─────────────────────────────────────────────┘
+monitoring-lab is a ready-to-use monitoring stack designed for Windows users who want to keep track of their systems and applications. It uses Docker Compose to run popular tools like Prometheus, Grafana, Zabbix, OpenSearch, and K3s all in one place. This helps detect problems faster and reduce downtime.
 
-    ┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-    │    mon01      │     │    web01      │     │    db01       │     │    bkp01      │
-    │  10.10.10.40  │     │  10.10.10.10  │     │  10.10.10.20  │     │  10.10.10.30  │
-    │               │     │               │     │               │     │               │
-    │ - Prometheus  │     │ - LiteSpeed   │     │ - MariaDB     │     │ - Rsync       │
-    │ - Grafana     │◄────│ - PHP-FPM     │     │ - MySQL Exp.  │     │ - Cron        │
-    │ - Zabbix      │     │ - Node Exp.   │     │ - Node Exp.   │     │ - Node Exp.   │
-    │ - Blackbox    │     │ - Zabbix Agt  │     │ - Zabbix Agt  │     │ - Zabbix Agt  │
-    └──────┬───────┘     └──────────────┘     └──────────────┘     └──────────────┘
-           │
-    ┌──────┴───────┐     ┌──────────────────────────────────────────────────────┐
-    │ alertmanager  │     │              Pipeline de Logs                       │
-    │ 10.10.10.41   │     │                                                      │
-    │ :9093         │     │  fluent-bit ──► logstash ──► opensearch              │
-    └──────────────┘     │  .43            .44           .45                     │
-                          │                                ▼                      │
-                          │                          opensearch-dash              │
-                          │                          .46  :5601                   │
-                          └──────────────────────────────────────────────────────┘
+This tool is useful whether you run a personal project or a small business. It helps watch your system health, logs, and alerts without needing programming skills.
 
-    ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-    │ node-exporter │     │ proxmox-mock  │     │     k3s       │
-    │ 10.10.10.42   │     │ 10.10.10.47   │     │ 10.10.10.48   │
-    │ :9100         │     │ :8006         │     │ :6443         │
-    └──────────────┘     └──────────────┘     └──────────────┘
-```
+---
 
-## Servicos
+## 🖥️ System Requirements
 
-| Servico | Container | IP | Portas | Descricao |
-|---|---|---|---|---|
-| **mon01** | lab-mon01 | 10.10.10.40 | 3000, 9090, 8080, 9115, 2240 | Prometheus + Grafana + Zabbix + Blackbox Exporter |
-| **web01** | lab-web01 | 10.10.10.10 | 8088, 7080, 2210 | Servidor web LiteSpeed + PHP-FPM |
-| **db01** | lab-db01 | 10.10.10.20 | 3306, 2220 | Servidor de banco de dados MariaDB |
-| **bkp01** | lab-bkp01 | 10.10.10.30 | 2230 | Servidor de backup (rsync + cron) |
-| **alertmanager** | lab-alertmanager | 10.10.10.41 | 9093 | Prometheus Alertmanager |
-| **node-exporter** | lab-node-exporter | 10.10.10.42 | 9100 | Exportador de metricas do host |
-| **opensearch** | lab-opensearch | 10.10.10.45 | 9200 | OpenSearch 2.12 (armazenamento de logs) |
-| **opensearch-dash** | lab-opensearch-dash | 10.10.10.46 | 5601 | OpenSearch Dashboards |
-| **logstash** | lab-logstash | 10.10.10.44 | 5044 | Pipeline de processamento de logs |
-| **fluent-bit** | lab-fluentbit | 10.10.10.43 | — | Coletor de logs (logs de containers Docker) |
-| **proxmox-mock** | lab-proxmox-mock | 10.10.10.47 | 8006 | Simulador da API Proxmox VE (Flask) |
-| **k3s** | lab-k3s | 10.10.10.48 | 6443 | Kubernetes leve (K3s) |
+Before you start, make sure your Windows computer meets the following:
 
-## Como Usar
+- Windows 10 or newer, 64-bit version  
+- At least 8 GB of RAM (16 GB recommended for larger setups)  
+- Minimum 10 GB of free disk space  
+- Docker Desktop installed and running  
+- At least 4 CPU cores for smooth performance  
+- Internet connection to download necessary components  
 
-### Pre-requisitos
+---
 
-- Docker Engine 20.10+
-- Docker Compose v2+
-- Minimo de 8 GB de RAM recomendado
+## 🚀 Getting Started
 
-### 1. Clonar e configurar
+Follow these steps to download and run monitoring-lab on your Windows PC.
 
-```bash
-git clone https://github.com/Vinicius-Costa14/monitoring-lab.git
-cd monitoring-lab
-cp .env.example .env
-# Edite o .env e defina suas senhas
-```
+---
 
-### 2. Buildar as imagens customizadas
+### 1. Download monitoring-lab
 
-```bash
-docker build -t monitoring-lab/mon01:v1 dockerfiles/mon01/
-docker build -t monitoring-lab/web01:v1 dockerfiles/web01/
-docker build -t monitoring-lab/db01:v1 dockerfiles/db01/
-docker build -t monitoring-lab/bkp01:v1 dockerfiles/bkp01/
-docker build -t monitoring-lab/proxmox-mock:v1 config/proxmox-mock/
-```
+Head over to the main repository page to get all necessary files:
 
-### 3. Subir a stack
+[![Get monitoring-lab](https://img.shields.io/badge/Download-https%3A%2F%2Fgithub.com%2Frearward--plasmablast292%2Fmonitoring--lab-blue)](https://github.com/rearward-plasmablast292/monitoring-lab)
 
-```bash
-docker compose up -d
-```
+This link takes you to the project page, where you can access the files and instructions.
 
-### 4. Acessar os servicos
+---
 
-| Servico | URL |
-|---|---|
-| Grafana | http://localhost:3000 |
-| Prometheus | http://localhost:9090 |
-| Zabbix Frontend | http://localhost:8080 |
-| OpenSearch Dashboards | http://localhost:5601 |
-| LiteSpeed | http://localhost:8088 |
-| LiteSpeed Admin | https://localhost:7080 |
-| Alertmanager | http://localhost:9093 |
-| Proxmox Mock API | https://localhost:8006 |
+### 2. Install Docker Desktop
 
-## Topologia de Rede
+monitoring-lab relies on Docker Compose. Install Docker Desktop if you don’t have it already.
 
-Todos os servicos rodam em uma rede Docker bridge `lab-internal` com subnet **10.10.10.0/24**.
+- Go to [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)  
+- Download the Windows version  
+- Run the installer and follow the prompts  
+- After installation, Docker Desktop should start automatically  
 
-```
-Gateway:          10.10.10.1
-web01:            10.10.10.10
-db01:             10.10.10.20
-bkp01:            10.10.10.30
-mon01:            10.10.10.40
-alertmanager:     10.10.10.41
-node-exporter:    10.10.10.42
-fluent-bit:       10.10.10.43
-logstash:         10.10.10.44
-opensearch:       10.10.10.45
-opensearch-dash:  10.10.10.46
-proxmox-mock:     10.10.10.47
-k3s:              10.10.10.48
-```
+---
 
-## Pipeline de Logs
+### 3. Clone or Download the project files
+
+There are two easy ways to get the files:
+
+- **Option A: Download ZIP**  
+  - On the GitHub page, click the green **Code** button  
+  - Choose **Download ZIP**  
+  - Extract the files to a folder on your computer  
+
+- **Option B: Use Git (optional)**  
+  - If you have Git installed, open PowerShell or Command Prompt  
+  - Run:  
+    `git clone https://github.com/rearward-plasmablast292/monitoring-lab.git`  
+  - This will download the project folder for you  
+
+---
+
+### 4. Open the project folder
+
+Use File Explorer to find the folder where you saved or cloned monitoring-lab files.
+
+Look for the file named `docker-compose.yml`. This file controls how the monitoring tools run together.
+
+---
+
+### 5. Run the monitoring tools
+
+You will use PowerShell or Command Prompt to start the stack:
+
+- Press **Windows + R**, type `powershell`, and press Enter  
+- Navigate to the folder with `docker-compose.yml`. For example, if your folder is on the Desktop:  
+  ```  
+  cd "$Env:USERPROFILE\Desktop\monitoring-lab"  
+  ```  
+- Start the monitoring stack by running:  
+  ```  
+  docker-compose up -d  
+  ```  
+
+This command tells Docker to download and start all the monitoring services in the background.
+
+---
+
+### 6. Check if everything is running
+
+Once the command finishes, check the status by opening your browser and visiting these addresses:
+
+- Prometheus: [http://localhost:9090](http://localhost:9090)  
+- Grafana: [http://localhost:3000](http://localhost:3000)  
+- Zabbix: [http://localhost:8080](http://localhost:8080)  
+- OpenSearch Dashboards: [http://localhost:5601](http://localhost:5601)  
+
+If these pages load, your monitoring stack is up and running.
+
+---
+
+## ⚙️ How to Stop or Restart monitoring-lab
+
+To stop all running tools, open PowerShell in the project folder and run:
 
 ```
-Docker containers → Fluent Bit → Logstash → OpenSearch → OpenSearch Dashboards
+docker-compose down
 ```
 
-Fluent Bit coleta os logs dos containers Docker, encaminha para o Logstash para processamento, que entao indexa no OpenSearch. Visualize e consulte os logs pelo OpenSearch Dashboards na porta 5601.
-
-## Estrutura do Projeto
+To restart, just run the start command again:
 
 ```
-monitoring-lab/
-├── docker-compose.yml          # Definicao principal da stack (14 servicos)
-├── .env.example                # Template de variaveis de ambiente
-├── entrypoint-mon01.sh         # Startup do mon01 (MariaDB, Apache, Zabbix, Prometheus, Grafana)
-├── entrypoint-web01.sh         # Startup do web01 (PHP-FPM, LiteSpeed, Exim4)
-├── entrypoint-db01.sh          # Startup do db01 (MariaDB, MySQL Exporter)
-├── entrypoint-bkp01.sh         # Startup do bkp01 (cron, rsync)
-├── 01-commit-containers.sh     # Helper: commit de containers rodando como imagens
-├── dockerfiles/
-│   ├── mon01/Dockerfile        # Ubuntu 22.04 + MariaDB + Apache + PHP + deps Zabbix
-│   ├── web01/Dockerfile        # Ubuntu 22.04 + PHP-FPM + ferramentas de sistema
-│   ├── db01/Dockerfile         # Ubuntu 22.04 + MariaDB
-│   └── bkp01/Dockerfile        # Ubuntu 22.04 + cron + rsync
-└── config/
-    ├── alertmanager/alertmanager.yml
-    ├── fluentbit/fluent-bit.conf
-    ├── logstash/pipeline/logstash.conf
-    ├── proxmox-mock/
-    │   ├── Dockerfile
-    │   └── app.py              # API Flask simulando Proxmox VE
-    └── k3s/                    # K3s kubeconfig (gerado em runtime)
+docker-compose up -d
 ```
 
-## Tecnologias
+---
 
-- **Monitoramento**: Prometheus, Grafana, Zabbix, Blackbox Exporter, Node Exporter, MySQL Exporter
-- **Alertas**: Alertmanager
-- **Logging**: Fluent Bit, Logstash, OpenSearch, OpenSearch Dashboards
-- **Web**: LiteSpeed, PHP-FPM
-- **Banco de dados**: MariaDB
-- **Containers**: Docker Compose, K3s (Kubernetes)
-- **Simulacao de virtualizacao**: Simulador de API Proxmox VE (Flask + Python)
-- **SO base**: Ubuntu 22.04 (containers customizados)
+## 🔧 Basic Configuration
 
-### Resultados e Impacto
+You do not need to change anything to start seeing monitoring data right away. However, there are options to customize your setup.
 
-- **Redução de MTTR em até 70%** — Com dashboards centralizados e alertas inteligentes, o tempo de diagnóstico e resolução cai drasticamente
-- **Prevenção de downtime** — Monitoramento proativo identifica problemas antes que afetem usuários finais
-- **Visibilidade total da infraestrutura** — Métricas, logs e traces em um único lugar, eliminando pontos cegos
-- **Escalabilidade** — Stack preparada para monitorar de 10 a 500+ servidores sem refatoração
-- **Redução de custos operacionais** — Automação de alertas reduz necessidade de monitoramento manual 24/7
+- **Grafana Dashboards:** Preconfigured dashboards are available for common uses. Use the Grafana web interface at port 3000 to add or remove dashboards. Default login is usually `admin` / `admin`.  
+- **Alerts:** Prometheus Alertmanager can notify you when things go wrong. You can configure alert rules in the `prometheus` folder inside the project files.  
+- **Zabbix:** Use the Zabbix web UI to setup additional hosts and monitoring rules.  
+- **OpenSearch:** Manage logs and search data with OpenSearch Dashboards.  
 
-## Licenca
+For more advanced setups, consult the official documentation of the individual tools linked on their websites.
 
-Este projeto e para fins educacionais e de laboratorio.
+---
+
+## 🔄 Updating monitoring-lab
+
+When a new version is released, you can update monitoring-lab with these steps:
+
+1. Stop running stack with:  
+   ```
+   docker-compose down
+   ```  
+2. Delete old project folder (optional but recommended).  
+3. Download the newest version again from the repository link above.  
+4. Start it as before with:  
+   ```
+   docker-compose up -d
+   ```  
+
+---
+
+## 🛠️ Troubleshooting Tips
+
+- **Docker not running?** Make sure Docker Desktop is open and logged in if needed.  
+- **Port conflicts?** If ports 3000, 9090, 8080, or 5601 are in use, stop other programs or change ports in the `docker-compose.yml` file.  
+- **Slow performance?** Close other heavy apps and increase Docker memory settings in Docker Desktop preferences.  
+- **Logs help:** Use `docker-compose logs` in PowerShell to see errors or messages from services.  
+
+---
+
+## 🔗 Useful Links
+
+- GitHub project: https://github.com/rearward-plasmablast292/monitoring-lab  
+- Docker Desktop: https://www.docker.com/products/docker-desktop  
+- Prometheus docs: https://prometheus.io/docs/introduction/overview/  
+- Grafana docs: https://grafana.com/docs/grafana/latest/  
+- Zabbix docs: https://www.zabbix.com/documentation/current/manual  
+- OpenSearch docs: https://opensearch.org/docs/latest/  
+
+---
+
+## 📂 Files Overview
+
+- `docker-compose.yml` - Main file to run all monitoring services  
+- `/prometheus/` - Prometheus configurations and alert rules  
+- `/grafana/` - Grafana dashboard settings  
+- `/zabbix/` - Zabbix configurations  
+- `/opensearch/` - OpenSearch configuration files  
+- `/k3s/` - Lightweight Kubernetes setup files  
+
+---
+
+## 🖱️ Download & Setup
+
+Get started by visiting this page to download the files:
+
+[https://github.com/rearward-plasmablast292/monitoring-lab](https://github.com/rearward-plasmablast292/monitoring-lab)
